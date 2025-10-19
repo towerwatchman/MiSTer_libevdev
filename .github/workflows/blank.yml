@@ -1,0 +1,125 @@
+```yaml
+name: Build libevdev and python-evdev for MiSTer FPGA
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04  # Matches MiSTer’s glibc 2.31
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y software-properties-common
+          sudo add-apt-repository ppa:deadsnakes/ppa -y
+          sudo apt-get update
+          sudo apt-get install -y build-essential git wget xz-utils \
+                                  python3.9 python3.9-dev pkg-config
+          # Install Linaro GCC 10.2
+          wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf.tar.xz
+          tar -xf gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf.tar.xz
+          sudo mv gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf /opt/gcc-10.2-arm
+          rm gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf.tar.xz
+
+      - name: Build libevdev and python-evdev
+        run: |
+          # Set up ARM cross-compiler
+          export PATH=/opt/gcc-10.2-arm/bin:$PATH
+          export CC=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-gcc
+          export CXX=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-g++
+          export LD=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ld
+          export AR=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ar
+          export RANLIB=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ranlib
+          export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC"
+          export LDFLAGS="-L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
+          # Verify toolchain
+          $CC --version
+          /opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-readelf --version
+
+          # Create sysroot directory
+          mkdir -p /usr/arm-none-linux-gnueabihf/{include,lib}
+
+          # Compile libevdev 1.13.2
+          wget https://freedesktop.org/software/libevdev/libevdev-1.13.2.tar.xz
+          tar -xvf libevdev-1.13.2.tar.xz
+          cd libevdev-1.13.2
+          ./configure --host=arm-none-linux-gnueabihf \
+                      --prefix=/usr/arm-none-linux-gnueabihf \
+                      CFLAGS="$CFLAGS" \
+                      LDFLAGS="$LDFLAGS" \
+                      PKG_CONFIG_PATH=/usr/arm-none-linux-gnueabihf/lib/pkgconfig
+          make -j$(nproc)
+          make install
+          cd ..
+
+          # Download Python 3.9.6 source for headers
+          wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tar.xz
+          tar -xJf Python-3.9.6.tar.xz
+          cd Python-3.9.6
+          ./configure --host=arm-none-linux-gnueabihf \
+                      --build=x86_64-linux-gnu \
+                      --prefix=/usr/arm-none-linux-gnueabihf \
+                      --enable-shared \
+                      --disable-ipv6 \
+                      --with-ensurepip=no \
+                      ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no
+          make -j$(nproc)
+          make install
+          cd ..
+
+          # Compile python-evdev 1.7.1
+          wget https://github.com/gvalkov/python-evdev/archive/refs/tags/v1.7.1.tar.gz
+          tar -xzf v1.7.1.tar.gz
+          cd python-evdev-1.7.1
+          python3.9 setup.py build_ext \
+              --include-dirs=/usr/arm-none-linux-gnueabihf/include:/usr/arm-none-linux-gnueabihf/include/python3.9 \
+              --library-dirs=/usr/arm-none-linux-gnueabihf/lib \
+              --libraries=evdev \
+              CC=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-gcc
+          python3.9 setup.py install --prefix=/usr/arm-none-linux-gnueabihf
+          cd ..
+
+      - name: Package Artifacts
+        run: |
+          mkdir -p artifacts
+          cp /usr/arm-none-linux-gnueabihf/lib/libevdev.so* artifacts/
+          cp -r /usr/arm-none-linux-gnueabihf/lib/python3.9/site-packages/evdev artifacts/
+          tar -czf libevdev-python-evdev-mister.tar.gz -C artifacts .
+          # Copy artifacts for inspection
+          cp -r artifacts/libevdev.so* .
+          cp -r artifacts/evdev .
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libevdev-python-evdev-mister
+          path: libevdev-python-evdev-mister.tar.gz
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          VERSION="v$(date +%Y.%m.%d).${{ github.run_number }}"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "$VERSION" -m "Release $VERSION compiled on $(date -u)"
+          git push origin "$VERSION"
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
+            --notes "libevdev (1.13.2) and python-evdev (1.7.1) for MiSTer FPGA compiled on $(date -u)" \
+            libevdev-python-evdev-mister.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
