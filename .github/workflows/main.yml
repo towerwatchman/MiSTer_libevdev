@@ -1,4 +1,3 @@
-```yaml
 name: Build libevdev and python-evdev for MiSTer FPGA
 
 on:
@@ -122,4 +121,4 @@ jobs:
             libevdev-python-evdev-mister.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
+
