@@ -42,7 +42,7 @@ jobs:
           export LD=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ld
           export AR=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ar
           export RANLIB=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ranlib
-          export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC"
+          export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -O2 -g"
           export LDFLAGS="-L$HOME/mister-sysroot/lib -Wl,--no-as-needed"
           # Verify toolchain
           $CC --version
@@ -83,7 +83,9 @@ jobs:
           wget https://github.com/gvalkov/python-evdev/archive/refs/tags/v1.7.1.tar.gz
           tar -xzf v1.7.1.tar.gz
           cd python-evdev-1.7.1
-          CC=$CC python3.9 setup.py build_ext \
+          export _PYTHON_HOST_PLATFORM=linux_arm
+          export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf
+          CC=$CC CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" python3.9 setup.py build_ext \
               --include-dirs=$HOME/mister-sysroot/include:$HOME/mister-sysroot/include/python3.9 \
               --library-dirs=$HOME/mister-sysroot/lib \
               --libraries=evdev
