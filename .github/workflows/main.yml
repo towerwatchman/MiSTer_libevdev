@@ -8,11 +8,12 @@ on:
     branches:
       - main
 
-permissions: write-all
+permissions:
+  contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Matches MiSTer’s glibc 2.31
+    runs-on: ubuntu-latest  # Updated to latest Ubuntu runner
 
     steps:
       - name: Checkout Repository
@@ -42,23 +43,23 @@ jobs:
           export AR=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ar
           export RANLIB=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ranlib
           export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC"
-          export LDFLAGS="-L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
+          export LDFLAGS="-L$HOME/mister-sysroot/lib -Wl,--no-as-needed"
           # Verify toolchain
           $CC --version
           /opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-readelf --version
 
           # Create sysroot directory
-          mkdir -p /usr/arm-none-linux-gnueabihf/{include,lib}
+          mkdir -p $HOME/mister-sysroot/{include,lib}
 
           # Compile libevdev 1.13.2
           wget https://freedesktop.org/software/libevdev/libevdev-1.13.2.tar.xz
           tar -xvf libevdev-1.13.2.tar.xz
           cd libevdev-1.13.2
           ./configure --host=arm-none-linux-gnueabihf \
-                      --prefix=/usr/arm-none-linux-gnueabihf \
+                      --prefix=$HOME/mister-sysroot \
                       CFLAGS="$CFLAGS" \
                       LDFLAGS="$LDFLAGS" \
-                      PKG_CONFIG_PATH=/usr/arm-none-linux-gnueabihf/lib/pkgconfig
+                      PKG_CONFIG_PATH=$HOME/mister-sysroot/lib/pkgconfig
           make -j$(nproc)
           make install
           cd ..
@@ -69,7 +70,7 @@ jobs:
           cd Python-3.9.6
           ./configure --host=arm-none-linux-gnueabihf \
                       --build=x86_64-linux-gnu \
-                      --prefix=/usr/arm-none-linux-gnueabihf \
+                      --prefix=$HOME/mister-sysroot \
                       --enable-shared \
                       --disable-ipv6 \
                       --with-ensurepip=no \
@@ -83,18 +84,18 @@ jobs:
           tar -xzf v1.7.1.tar.gz
           cd python-evdev-1.7.1
           python3.9 setup.py build_ext \
-              --include-dirs=/usr/arm-none-linux-gnueabihf/include:/usr/arm-none-linux-gnueabihf/include/python3.9 \
-              --library-dirs=/usr/arm-none-linux-gnueabihf/lib \
+              --include-dirs=$HOME/mister-sysroot/include:$HOME/mister-sysroot/include/python3.9 \
+              --library-dirs=$HOME/mister-sysroot/lib \
               --libraries=evdev \
               CC=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-gcc
-          python3.9 setup.py install --prefix=/usr/arm-none-linux-gnueabihf
+          python3.9 setup.py install --prefix=$HOME/mister-sysroot
           cd ..
 
       - name: Package Artifacts
         run: |
           mkdir -p artifacts
-          cp /usr/arm-none-linux-gnueabihf/lib/libevdev.so* artifacts/
-          cp -r /usr/arm-none-linux-gnueabihf/lib/python3.9/site-packages/evdev artifacts/
+          cp $HOME/mister-sysroot/lib/libevdev.so* artifacts/
+          cp -r $HOME/mister-sysroot/lib/python3.9/site-packages/evdev artifacts/
           tar -czf libevdev-python-evdev-mister.tar.gz -C artifacts .
           # Copy artifacts for inspection
           cp -r artifacts/libevdev.so* .
@@ -120,4 +121,3 @@ jobs:
             libevdev-python-evdev-mister.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
