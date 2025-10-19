@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Updated to latest Ubuntu runner
+    runs-on: ubuntu-latest  # Latest Ubuntu runner
 
     steps:
       - name: Checkout Repository
@@ -83,11 +83,10 @@ jobs:
           wget https://github.com/gvalkov/python-evdev/archive/refs/tags/v1.7.1.tar.gz
           tar -xzf v1.7.1.tar.gz
           cd python-evdev-1.7.1
-          python3.9 setup.py build_ext \
+          CC=$CC python3.9 setup.py build_ext \
               --include-dirs=$HOME/mister-sysroot/include:$HOME/mister-sysroot/include/python3.9 \
               --library-dirs=$HOME/mister-sysroot/lib \
-              --libraries=evdev \
-              CC=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-gcc
+              --libraries=evdev
           python3.9 setup.py install --prefix=$HOME/mister-sysroot
           cd ..
 
