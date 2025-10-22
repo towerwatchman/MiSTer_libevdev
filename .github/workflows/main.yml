@@ -86,12 +86,14 @@ jobs:
         run: |
           git clone https://github.com/gvalkov/python-evdev.git
           cd python-evdev
+          ls -R src
 
       - name: Generate ecodes.c
         run: |
           sudo mkdir -p /usr/include/linux
           sudo cp ~/target-headers/include/linux/input*.h /usr/include/linux/
           sudo cp ~/target-headers/include/linux/uinput.h /usr/include/linux/ || true
+          mkdir -p src/evdev
           python3.9 src/evdev/genecodes_c.py --ecodes > src/evdev/ecodes.c
           sudo rm -rf /usr/include/linux
 
