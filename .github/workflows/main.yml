@@ -32,7 +32,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential git wget unzip \
                                   python3.9 python3.9-dev python3-pip python3.9-distutils \
-                                  zlib1g-dev libudev-dev libc6-dev
+                                  zlib1g-dev libudev-dev libc6-dev binutils
           python3.9 -m pip install setuptools wheel
 
       - name: Install ARM Cross-Compiler
@@ -60,7 +60,6 @@ jobs:
           export LDFLAGS="-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
           ./configure --host=arm-none-linux-gnueabihf --build=x86_64-linux-gnu \
                       --prefix=/usr/arm-none-linux-gnueabihf \
-                      --with-sysroot=/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf \
                       --enable-shared \
                       --disable-ipv6 \
                       --with-ensurepip=no \
