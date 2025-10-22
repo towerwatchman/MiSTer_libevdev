@@ -45,6 +45,15 @@ jobs:
           echo "export PATH=/opt/gcc-${GCC_VERSION}-arm/bin:$PATH" >> $GITHUB_ENV
           ls -l /opt/gcc-${GCC_VERSION}-arm/bin/
           /opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc --version || { echo "Toolchain not found"; exit 1; }
+          readelf --version || { echo "readelf not found"; exit 1; }
+
+      - name: Clone MiSTer Kernel and Install Headers
+        run: |
+          git clone https://github.com/MiSTer-devel/Linux-Kernel_MiSTer.git
+          cd Linux-Kernel_MiSTer
+          # Replace with specific branch if known, e.g., git checkout <branch>
+          make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- INSTALL_HDR_PATH=~/target-headers headers_install
+          cd ~
 
       - name: Cross-Compile Python 3.9.6
         run: |
@@ -56,6 +65,7 @@ jobs:
           export LD=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ld
           export AR=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ar
           export RANLIB=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ranlib
+          export READELF=/usr/bin/readelf
           export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC"
           export LDFLAGS="-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
           ./configure --host=arm-none-linux-gnueabihf --build=x86_64-linux-gnu \
