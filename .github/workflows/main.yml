@@ -1,19 +1,19 @@
-name: Build libevdev and python-evdev for MiSTer FPGA
+name: Build python-evdev for MiSTer
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: write-all
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Latest Ubuntu runner
+    runs-on: ubuntu-latest
+
+    env:
+      PYTHON_VERSION: 3.9.6
+      GCC_VERSION: 10.2-2020.11
 
     steps:
       - name: Checkout Repository
@@ -25,100 +25,297 @@ jobs:
           sudo apt-get install -y software-properties-common
           sudo add-apt-repository ppa:deadsnakes/ppa -y
           sudo apt-get update
-          sudo apt-get install -y build-essential git wget xz-utils \
-                                  python3.9 python3.9-dev pkg-config
-          # Install Linaro GCC 10.2
-          wget https://developer.arm.com/-/media/Files/downloads/gnu-a/10.2-2020.11/binrel/gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf.tar.xz
-          tar -xf gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf.tar.xz
-          sudo mv gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf /opt/gcc-10.2-arm
-          rm gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf.tar.xz
+          sudo apt-get install -y build-essential git wget unzip \
+                                  python3.9 python3.9-dev python3-pip \
+                                  zlib1g-dev libncurses5-dev libudev-dev
+          python3.9 -m pip install setuptools wheel
 
-      - name: Build libevdev and python-evdev
+      - name: Install ARM Cross-Compiler
         run: |
-          # Set up ARM cross-compiler
-          export PATH=/opt/gcc-10.2-arm/bin:$PATH
-          export CC=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-gcc
-          export CXX=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-g++
-          export LD=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ld
-          export AR=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ar
-          export RANLIB=/opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-ranlib
-          export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -O2 -g"
-          export LDFLAGS="-L$HOME/mister-sysroot/lib -Wl,--no-as-needed"
-          # Verify toolchain
-          $CC --version
-          /opt/gcc-10.2-arm/bin/arm-none-linux-gnueabihf-readelf --version
+          wget -q -c https://developer.arm.com/-/media/Files/downloads/gnu-a/${GCC_VERSION}/binrel/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
+          sudo mkdir -p /opt
+          sudo tar xf gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz -C /opt
+          rm gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
+          echo "export PATH=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin:$PATH" >> $GITHUB_ENV
+          arm-none-linux-gnueabihf-gcc --version
 
-          # Create sysroot directory
-          mkdir -p $HOME/mister-sysroot/{include,lib}
+      - name: Clone MiSTer Kernel and Install Headers
+        run: |
+          git clone https://github.com/MiSTer-devel/Linux-Kernel_MiSTer.git
+          cd Linux-Kernel_MiSTer
+          # Replace with specific branch if known, e.g., git checkout <branch>
+          make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- INSTALL_HDR_PATH=~/target-headers headers_install
+          cd ~
 
-          # Compile libevdev 1.13.2
-          wget https://freedesktop.org/software/libevdev/libevdev-1.13.2.tar.xz
-          tar -xvf libevdev-1.13.2.tar.xz
-          cd libevdev-1.13.2
-          ./configure --host=arm-none-linux-gnueabihf \
-                      --prefix=$HOME/mister-sysroot \
-                      CFLAGS="$CFLAGS" \
-                      LDFLAGS="$LDFLAGS" \
-                      PKG_CONFIG_PATH=$HOME/mister-sysroot/lib/pkgconfig
-          make -j$(nproc)
-          make install
-          cd ..
-
-          # Download Python 3.9.6 source for headers
-          wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tar.xz
-          tar -xJf Python-3.9.6.tar.xz
-          cd Python-3.9.6
-          ./configure --host=arm-none-linux-gnueabihf \
-                      --build=x86_64-linux-gnu \
-                      --prefix=$HOME/mister-sysroot \
+      - name: Cross-Compile Python 3.9.6
+        run: |
+          wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz
+          tar -xJf Python-${PYTHON_VERSION}.tar.xz
+          cd Python-${PYTHON_VERSION}
+          export CC=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
+          export CXX=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++
+          export LD=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ld
+          export AR=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ar
+          export RANLIB=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ranlib
+          export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC"
+          export LDFLAGS="-L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
+          ./configure --host=arm-none-linux-gnueabihf --build=x86_64-linux-gnu \
+                      --prefix=/usr/arm-none-linux-gnueabihf \
                       --enable-shared \
                       --disable-ipv6 \
                       --with-ensurepip=no \
-                      ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no
+                      ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no \
+                      ac_cv_sizeof_wchar_t=4
           make -j$(nproc)
-          make install
-          cd ..
+          make install DESTDIR=$PWD/install
+          sudo mkdir -p /usr/include/arm-linux-gnueabihf/python3.9
+          sudo cp -r install/usr/arm-none-linux-gnueabihf/include/python3.9/* /usr/include/arm-linux-gnueabihf/python3.9/
+          sudo cp install/usr/arm-none-linux-gnueabihf/lib/python3.9/_sysconfigdata__linux_arm-linux-gnueabihf.py /usr/lib/python3.9/
+          cd ~
 
-          # Compile python-evdev 1.7.1
-          wget https://github.com/gvalkov/python-evdev/archive/refs/tags/v1.7.1.tar.gz
-          tar -xzf v1.7.1.tar.gz
-          cd python-evdev-1.7.1
-          export _PYTHON_HOST_PLATFORM=linux_arm
-          export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf
-          CC=$CC CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" python3.9 setup.py build_ext \
-              --include-dirs=$HOME/mister-sysroot/include:$HOME/mister-sysroot/include/python3.9 \
-              --library-dirs=$HOME/mister-sysroot/lib \
-              --libraries=evdev
-          python3.9 setup.py install --prefix=$HOME/mister-sysroot
-          cd ..
+      - name: Clone python-evdev
+        run: |
+          git clone https://github.com/gvalkov/python-evdev.git
+          cd python-evdev
+
+      - name: Generate ecodes.c
+        run: |
+          sudo mkdir -p /usr/include/linux
+          sudo cp ~/target-headers/include/linux/input*.h /usr/include/linux/
+          sudo cp ~/target-headers/include/linux/uinput.h /usr/include/linux/ || true
+          python3.9 src/evdev/genecodes_c.py --ecodes > src/evdev/ecodes.c
+          sudo rm -rf /usr/include/linux
+
+      - name: Add Conditional Checks to ecodes.c
+        run: |
+          python3.9 ../modify_ecodes.py
+
+      - name: Set Environment Variables
+        run: |
+          echo "export CC=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc" >> $GITHUB_ENV
+          echo "export CXX=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++" >> $GITHUB_ENV
+          echo "export LD=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ld" >> $GITHUB_ENV
+          echo "export AR=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ar" >> $GITHUB_ENV
+          echo "export RANLIB=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ranlib" >> $GITHUB_ENV
+          echo "export CFLAGS=-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -I/usr/arm-none-linux-gnueabihf/include -I~/target-headers/include -I/usr/include/arm-linux-gnueabihf/python3.9" >> $GITHUB_ENV
+          echo "export LDFLAGS=-L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed" >> $GITHUB_ENV
+          echo "export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf" >> $GITHUB_ENV
+          echo "export LDSHARED=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc -shared" >> $GITHUB_ENV
+          echo "export PKG_CONFIG_PATH=/usr/arm-none-linux-gnueabihf/lib/pkgconfig" >> $GITHUB_ENV
+          echo "export SETUPTOOLS_EXT_SUFFIX=.cpython-39-arm-linux-gnueabihf.so" >> $GITHUB_ENV
+          echo "export SETUPTOOLS_PLATFORM=linux_arm" >> $GITHUB_ENV
+          echo "export PYTHONPATH=/usr/lib/python3.9" >> $GITHUB_ENV
+
+      - name: Build python-evdev
+        run: |
+          python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
+          mkdir -p Scripts/python/evdev
+          cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
+          cp -r src/evdev/* Scripts/python/evdev/
+          # Generate ecodes.py
+          python3.9 -m pip install .
+          python3.9 src/evdev/genecodes_py.py > Scripts/python/evdev/ecodes.py || true
+
+      - name: Create Install Script
+        run: |
+          mkdir -p Scripts
+          cat > Scripts/install_evdev.sh << EOL
+          #!/bin/bash
+          # install_evdev.sh
+          # Moves python-evdev files from Scripts/python/evdev to /usr/lib/python3.9/site-packages/evdev/
+          sudo mkdir -p /usr/lib/python3.9/site-packages/evdev
+          sudo mv /Scripts/python/evdev/* /usr/lib/python3.9/site-packages/evdev/
+          sudo chmod -R 755 /usr/lib/python3.9/site-packages/evdev
+          sudo mv /usr/lib/python3.9/lib-dynload/libevdev.so /usr/lib/python3.9/lib-dynload/libevdev.so.bak 2>/dev/null || true
+          echo "python-evdev installed to /usr/lib/python3.9/site-packages/evdev/"
+          EOL
+          chmod +x Scripts/install_evdev.sh
 
       - name: Package Artifacts
         run: |
           mkdir -p artifacts
-          cp $HOME/mister-sysroot/lib/libevdev.so* artifacts/
-          cp -r $HOME/mister-sysroot/lib/python3.9/site-packages/evdev artifacts/
-          tar -czf libevdev-python-evdev-mister.tar.gz -C artifacts .
-          # Copy artifacts for inspection
-          cp -r artifacts/libevdev.so* .
-          cp -r artifacts/evdev .
+          cp -r Scripts/* artifacts/
+          tar -czf evdev-mister.tar.gz -C artifacts .
+
+      - name: Generate Database JSON
+        run: |
+          cat > db/mister_evdev_db.json << EOL
+          {
+            "db_id": "mister_evdev",
+            "timestamp": $(date +%s),
+            "files": {
+              "Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so": {
+                "hash": "$(md5sum Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so": {
+                "hash": "$(md5sum Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so": {
+                "hash": "$(md5sum Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/__init__.py": {
+                "hash": "$(md5sum Scripts/python/evdev/__init__.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/__init__.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/__init__.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/ecodes.py": {
+                "hash": "$(md5sum Scripts/python/evdev/ecodes.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/ecodes.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/ecodes_runtime.py": {
+                "hash": "$(md5sum Scripts/python/evdev/ecodes_runtime.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/ecodes_runtime.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes_runtime.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/eventio.py": {
+                "hash": "$(md5sum Scripts/python/evdev/eventio.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/eventio.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/eventio_async.py": {
+                "hash": "$(md5sum Scripts/python/evdev/eventio_async.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/eventio_async.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio_async.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/events.py": {
+                "hash": "$(md5sum Scripts/python/evdev/events.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/events.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/events.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/ff.py": {
+                "hash": "$(md5sum Scripts/python/evdev/ff.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/ff.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ff.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/device.py": {
+                "hash": "$(md5sum Scripts/python/evdev/device.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/device.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/device.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/uinput.py": {
+                "hash": "$(md5sum Scripts/python/evdev/uinput.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/uinput.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/uinput.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/util.py": {
+                "hash": "$(md5sum Scripts/python/evdev/util.py | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/util.py),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/util.py",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/python/evdev/py.typed": {
+                "hash": "$(md5sum Scripts/python/evdev/py.typed | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/python/evdev/py.typed),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/py.typed",
+                "tags": ["evdev", "python"],
+                "overwrite": true,
+                "reboot": false
+              },
+              "Scripts/install_evdev.sh": {
+                "hash": "$(md5sum Scripts/install_evdev.sh | cut -d' ' -f1)",
+                "size": $(wc -c < Scripts/install_evdev.sh),
+                "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/install_evdev.sh",
+                "tags": ["evdev", "script"],
+                "overwrite": true,
+                "reboot": false
+              }
+            },
+            "folders": {
+              "Scripts/python/evdev": {
+                "tags": ["evdev"]
+              }
+            },
+            "default_options": {
+              "filter": "evdev"
+            }
+          }
+          EOL
+
+      - name: Create db Directory and Move JSON file
+        run: |
+          mkdir -p db
+          mv db/mister_evdev_db.json db/
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Scripts/python/evdev/*
+          git add Scripts/install_evdev.sh
+          git add db/mister_evdev_db.json
+          git commit -m "Update python-evdev and install script for $GITHUB_SHA" || echo "No changes to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Package Artifacts
+        run: |
+          mkdir -p artifacts
+          cp -r Scripts/* artifacts/
+          tar -czf evdev-mister.tar.gz -C artifacts .
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: libevdev-python-evdev-mister
-          path: libevdev-python-evdev-mister.tar.gz
+          name: evdev-mister
+          path: evdev-mister.tar.gz
+          if-no-files-found: error
 
-      - name: Create Release
+      - name: Create or Update GitHub Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          VERSION="v$(date +%Y.%m.%d).${{ github.run_number }}"
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git tag -a "$VERSION" -m "Release $VERSION compiled on $(date -u)"
-          git push origin "$VERSION"
-          gh release create "$VERSION" \
-            --title "Release $VERSION" \
-            --notes "libevdev (1.13.2) and python-evdev (1.7.1) for MiSTer FPGA compiled on $(date -u)" \
-            libevdev-python-evdev-mister.tar.gz
+          TAG="v1.7.0-mister-$(date +%Y%m%d)"
+          echo "Attempting to create or update release with tag: $TAG"
+          gh release create "$TAG" \
+            --title "python-evdev 1.7.0 for MiSTer" \
+            --notes "Built for MiSTer FPGA (ARM). Includes python-evdev module and install script." \
+            --draft=false \
+            evdev-mister.tar.gz || \
+          gh release upload "$TAG" evdev-mister.tar.gz --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
