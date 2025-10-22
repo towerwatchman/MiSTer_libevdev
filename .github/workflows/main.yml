@@ -19,21 +19,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Cache APT Packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('**/build-evdev.yml') }}
+          restore-keys: ${{ runner.os }}-apt-
+
       - name: Install Dependencies
         run: |
-          
           sudo add-apt-repository ppa:deadsnakes/ppa -y
-          sudo apt update && sudo apt upgrade -y
-          sudo apt-get install -y software-properties-common \
-          binfmt-support qemu-user-static autoconf bc bison curl \
-          flex gcc git libelf-dev libgmp3-dev libiberty-dev liblz4-tool libmpc-dev \
-          libncurses-dev libncurses5-dev libpci-dev libssl-dev  lzop \
-          openssl qemu-user sharutils u-boot-tools
-          
           sudo apt-get update
-          sudo apt-get install -y build-essential git unzip \
+          sudo apt-get install -y build-essential git wget unzip \
                                   python3.9 python3.9-dev python3-pip python3.9-distutils \
-                                  zlib1g-dev libudev-dev
+                                  zlib1g-dev libudev-dev libc6-dev
           python3.9 -m pip install setuptools wheel
 
       - name: Install ARM Cross-Compiler
@@ -47,34 +46,27 @@ jobs:
           ls -l /opt/gcc-${GCC_VERSION}-arm/bin/
           /opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc --version || { echo "Toolchain not found"; exit 1; }
 
-      - name: Clone MiSTer Kernel and Install Headers
-        run: |
-          git clone https://github.com/MiSTer-devel/Linux-Kernel_MiSTer.git
-          cd Linux-Kernel_MiSTer
-          # Replace with specific branch if known, e.g., git checkout <branch>
-          make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- INSTALL_HDR_PATH=~/target-headers headers_install
-          cd ~
-
       - name: Cross-Compile Python 3.9.6
         run: |
           wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz
           tar -xJf Python-${PYTHON_VERSION}.tar.xz
           cd Python-${PYTHON_VERSION}
-          export CC=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc
-          export CXX=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++
-          export LD=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ld
-          export AR=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ar
-          export RANLIB=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ranlib
+          export CC=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc
+          export CXX=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-g++
+          export LD=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ld
+          export AR=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ar
+          export RANLIB=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ranlib
           export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC"
-          export LDFLAGS="-L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
+          export LDFLAGS="-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed"
           ./configure --host=arm-none-linux-gnueabihf --build=x86_64-linux-gnu \
                       --prefix=/usr/arm-none-linux-gnueabihf \
+                      --with-sysroot=/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf \
                       --enable-shared \
                       --disable-ipv6 \
                       --with-ensurepip=no \
                       ac_cv_file__dev_ptmx=no ac_cv_file__dev_ptc=no \
                       ac_cv_sizeof_wchar_t=4
-          make -j$(nproc)
+          make -j$(nproc) || { cat config.log; exit 1; }
           make install DESTDIR=$PWD/install
           sudo mkdir -p /usr/include/arm-linux-gnueabihf/python3.9
           sudo cp -r install/usr/arm-none-linux-gnueabihf/include/python3.9/* /usr/include/arm-linux-gnueabihf/python3.9/
@@ -100,15 +92,15 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          echo "export CC=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc" >> $GITHUB_ENV
-          echo "export CXX=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++" >> $GITHUB_ENV
-          echo "export LD=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ld" >> $GITHUB_ENV
-          echo "export AR=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ar" >> $GITHUB_ENV
-          echo "export RANLIB=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-ranlib" >> $GITHUB_ENV
+          echo "export CC=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc" >> $GITHUB_ENV
+          echo "export CXX=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-g++" >> $GITHUB_ENV
+          echo "export LD=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ld" >> $GITHUB_ENV
+          echo "export AR=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ar" >> $GITHUB_ENV
+          echo "export RANLIB=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ranlib" >> $GITHUB_ENV
           echo "export CFLAGS=-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -I/usr/arm-none-linux-gnueabihf/include -I~/target-headers/include -I/usr/include/arm-linux-gnueabihf/python3.9" >> $GITHUB_ENV
-          echo "export LDFLAGS=-L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed" >> $GITHUB_ENV
+          echo "export LDFLAGS=-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed" >> $GITHUB_ENV
           echo "export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf" >> $GITHUB_ENV
-          echo "export LDSHARED=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-gcc -shared" >> $GITHUB_ENV
+          echo "export LDSHARED=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc -shared" >> $GITHUB_ENV
           echo "export PKG_CONFIG_PATH=/usr/arm-none-linux-gnueabihf/lib/pkgconfig" >> $GITHUB_ENV
           echo "export SETUPTOOLS_EXT_SUFFIX=.cpython-39-arm-linux-gnueabihf.so" >> $GITHUB_ENV
           echo "export SETUPTOOLS_PLATFORM=linux_arm" >> $GITHUB_ENV
@@ -120,7 +112,6 @@ jobs:
           mkdir -p Scripts/python/evdev
           cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
           cp -r src/evdev/* Scripts/python/evdev/
-          # Generate ecodes.py
           python3.9 -m pip install .
           python3.9 src/evdev/genecodes_py.py > Scripts/python/evdev/ecodes.py || true
 
@@ -139,14 +130,9 @@ jobs:
           EOL
           chmod +x Scripts/install_evdev.sh
 
-      - name: Package Artifacts
-        run: |
-          mkdir -p artifacts
-          cp -r Scripts/* artifacts/
-          tar -czf evdev-mister.tar.gz -C artifacts .
-
       - name: Generate Database JSON
         run: |
+          mkdir -p db
           cat > db/mister_evdev_db.json << EOL
           {
             "db_id": "mister_evdev",
