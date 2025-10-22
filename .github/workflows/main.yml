@@ -32,15 +32,14 @@ jobs:
 
       - name: Install ARM Cross-Compiler
         run: |
-          wget -q -c https://developer.arm.com/-/media/Files/downloads/gnu-a/${GCC_VERSION}/binrel/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
-          echo https://developer.arm.com/-/media/Files/downloads/gnu-a/${GCC_VERSION}/binrel/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
-          
-          sudo mkdir -p /opt
-          sudo tar -xf gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
-          sudo mv gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf /opt/gcc-${GCC_VERSION}-arm
-          rm gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
+          wget https://developer.arm.com/-/media/Files/downloads/gnu-a/${GCC_VERSION}/binrel/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz -O gcc-arm.tar.xz || { echo "Failed to download toolchain"; exit 1; }
+          tar -xf gcc-arm.tar.xz || { echo "Failed to extract toolchain"; exit 1; }
+          sudo mv gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf /opt/gcc-${GCC_VERSION}-arm
+          rm gcc-arm.tar.xz
+          export PATH=/opt/gcc-${GCC_VERSION}-arm/bin:$PATH
           echo "export PATH=/opt/gcc-${GCC_VERSION}-arm/bin:$PATH" >> $GITHUB_ENV
-          arm-none-linux-gnueabihf-gcc --version
+          ls -l /opt/gcc-${GCC_VERSION}-arm/bin/
+          /opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc --version || { echo "Toolchain not found"; exit 1; }
 
       - name: Clone MiSTer Kernel and Install Headers
         run: |
