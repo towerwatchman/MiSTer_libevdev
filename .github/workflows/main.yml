@@ -36,9 +36,10 @@ jobs:
           echo https://developer.arm.com/-/media/Files/downloads/gnu-a/${GCC_VERSION}/binrel/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
           
           sudo mkdir -p /opt
-          sudo tar -xf gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz -C /opt
+          sudo tar -xf gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
+          sudo mv gcc-arm-10.2-2020.11-x86_64-arm-none-linux-gnueabihf /opt/gcc-${GCC_VERSION}-arm
           rm gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf.tar.xz
-          echo "export PATH=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf/bin:$PATH" >> $GITHUB_ENV
+          echo "export PATH=/opt/gcc-arm-${GCC_VERSION}-x86_64-arm/bin:$PATH" >> $GITHUB_ENV
           arm-none-linux-gnueabihf-gcc --version
 
       - name: Clone MiSTer Kernel and Install Headers
