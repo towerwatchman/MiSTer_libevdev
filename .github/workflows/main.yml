@@ -287,12 +287,7 @@ jobs:
               "filter": "evdev"
             }
           }
-          EOL
-
-      - name: Create db Directory and Move JSON file
-        run: |
-          mkdir -p db
-          mv db/mister_evdev_db.json db/
+          EOL     
 
       - name: Commit and Push Changes
         run: |
