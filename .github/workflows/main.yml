@@ -130,9 +130,9 @@ jobs:
         run: |     
           cd python-evdev     
           python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
-          mkdir -p Scripts/python/evdev
-          cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
-          cp src/evdev/* Scripts/python/evdev/
+          mkdir -p /Scripts/python/evdev
+          cp build/lib.linux-arm-3.9/evdev/*.so /Scripts/python/evdev/
+          cp src/evdev/* /Scripts/python/evdev/
 
       - name: Create Install Script
         run: |
@@ -291,9 +291,11 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
-          cd ~
           pwd
           ls -l
+          cd Scripts
+          ls -l
+          cd /
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add Scripts/python/evdev/*
