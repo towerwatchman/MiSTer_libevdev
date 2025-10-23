@@ -131,8 +131,8 @@ jobs:
           cd python-evdev     
           python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
           sudo mkdir -p /Scripts/python/evdev
-          cp build/lib.linux-arm-3.9/evdev/*.so /Scripts/python/evdev/
-          cp src/evdev/* /Scripts/python/evdev/
+          sudo cp build/lib.linux-arm-3.9/evdev/*.so /Scripts/python/evdev/
+          sudo cp src/evdev/* /Scripts/python/evdev/
 
       - name: Create Install Script
         run: |
