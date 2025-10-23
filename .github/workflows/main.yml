@@ -42,7 +42,7 @@ jobs:
           sudo mv gcc-arm-${GCC_VERSION}-x86_64-arm-none-linux-gnueabihf /opt/gcc-${GCC_VERSION}-arm
           rm gcc-arm.tar.xz
           export PATH=/opt/gcc-${GCC_VERSION}-arm/bin:$PATH
-          echo "export PATH=/opt/gcc-${GCC_VERSION}-arm/bin:$PATH" >> $GITHUB_ENV
+          echo "PATH=/opt/gcc-${GCC_VERSION}-arm/bin:$PATH" >> $GITHUB_ENV  # Fixed: No "export "
           ls -l /opt/gcc-${GCC_VERSION}-arm/bin/
           /opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc --version || { echo "Toolchain not found"; exit 1; }
           readelf --version || { echo "readelf not found"; exit 1; }
@@ -77,28 +77,31 @@ jobs:
                       ac_cv_sizeof_wchar_t=4
           make -j$(nproc) || { cat config.log; exit 1; }
           make install DESTDIR=$PWD/install
-          sudo mkdir -p /usr/include/arm-linux-gnueabihf/python3.9
-          sudo cp -r install/usr/arm-none-linux-gnueabihf/include/python3.9/* /usr/include/arm-linux-gnueabihf/python3.9/
-          sudo cp install/usr/arm-none-linux-gnueabihf/lib/python3.9/_sysconfigdata__linux_arm-linux-gnueabihf.py /usr/lib/python3.9/
+          sudo cp -r $PWD/install/usr/arm-none-linux-gnueabihf /usr/  # Fixed: Copy full sysroot (includes + libs) to match prefix
+          sudo cp $PWD/install/usr/arm-none-linux-gnueabihf/lib/python3.9/_sysconfigdata__linux_arm-linux-gnueabihf.py /usr/lib/python3.9/  # Kept sysconfig copy
           cd ~
 
       - name: Clone python-evdev
         run: |
           git clone https://github.com/gvalkov/python-evdev.git
           cd python-evdev
-          # Pin to a commit with src/evdev/ structure if needed, e.g., git checkout <commit>
+          git checkout v1.7.1  # Added: Pin to latest tag for reproducibility (update if needed)
           ls -R
           pwd
 
       - name: Generate ecodes.c
         run: |
           cd python-evdev
+          # Preserve host /usr/include/linux to avoid breaking host includes
+          sudo mv /usr/include/linux /usr/include/linux_backup || true  # If it doesn't exist, skip
           sudo mkdir -p /usr/include/linux
           sudo cp ~/target-headers/include/linux/input*.h /usr/include/linux/
           sudo cp ~/target-headers/include/linux/uinput.h /usr/include/linux/ || true
           mkdir -p src/evdev
           python3.9 src/evdev/genecodes_c.py --ecodes > src/evdev/ecodes.c
+          # Restore host includes
           sudo rm -rf /usr/include/linux
+          sudo mv /usr/include/linux_backup /usr/include/linux || true
 
       - name: Add Conditional Checks to ecodes.c
         run: |
@@ -107,19 +110,19 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          echo "export CC=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc" >> $GITHUB_ENV
-          echo "export CXX=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-g++" >> $GITHUB_ENV
-          echo "export LD=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ld" >> $GITHUB_ENV
-          echo "export AR=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ar" >> $GITHUB_ENV
-          echo "export RANLIB=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ranlib" >> $GITHUB_ENV
-          echo "export CFLAGS=-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -I~/usr/arm-none-linux-gnueabihf/include -I~/target-headers/include -I~/usr/include/arm-linux-gnueabihf/python3.9" >> $GITHUB_ENV
-          echo "export LDFLAGS=-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed" >> $GITHUB_ENV
-          echo "export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf" >> $GITHUB_ENV
-          echo "export LDSHARED=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc -shared" >> $GITHUB_ENV
-          echo "export PKG_CONFIG_PATH=/usr/arm-none-linux-gnueabihf/lib/pkgconfig" >> $GITHUB_ENV
-          echo "export SETUPTOOLS_EXT_SUFFIX=.cpython-39-arm-linux-gnueabihf.so" >> $GITHUB_ENV
-          echo "export SETUPTOOLS_PLATFORM=linux_arm" >> $GITHUB_ENV
-          echo "export PYTHONPATH=/usr/lib/python3.9" >> $GITHUB_ENV
+          echo "CC=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc" >> $GITHUB_ENV  # Fixed: No "export "
+          echo "CXX=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-g++" >> $GITHUB_ENV
+          echo "LD=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ld" >> $GITHUB_ENV
+          echo "AR=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ar" >> $GITHUB_ENV
+          echo "RANLIB=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ranlib" >> $GITHUB_ENV
+          echo "CFLAGS=-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -I/home/runner/target-headers/include" >> $GITHUB_ENV  # Fixed: Removed invalid ~/usr paths; distutils handles Python includes via sysconfig
+          echo "LDFLAGS=-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed" >> $GITHUB_ENV
+          echo "_PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf" >> $GITHUB_ENV
+          echo "LDSHARED=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc -shared" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/arm-none-linux-gnueabihf/lib/pkgconfig" >> $GITHUB_ENV
+          echo "SETUPTOOLS_EXT_SUFFIX=.cpython-39-arm-linux-gnueabihf.so" >> $GITHUB_ENV
+          echo "SETUPTOOLS_PLATFORM=linux_arm" >> $GITHUB_ENV
+          echo "PYTHONPATH=/usr/lib/python3.9" >> $GITHUB_ENV
 
       - name: Build python-evdev
         run: |     
@@ -127,10 +130,11 @@ jobs:
           python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
           mkdir -p /Scripts/python/evdev
           cp build/lib.linux-arm-3.9/evdev/*.so /Scripts/python/evdev/
-          cp -r src/evdev/* /Scripts/python/evdev/
-          python3.9 -m pip install .
+          cp -r evdev/* /Scripts/python/evdev/  # Changed: Original cp src/evdev/* but .py files are in evdev/; adjust if src/ has extras
+          python3.9 -m pip install .  # Optional: Installs to host, but you're copying manually anyway
           python3.9 src/evdev/genecodes_py.py > /Scripts/python/evdev/ecodes.py || true
 
+      # Remaining steps (Create Install Script onward) are unchanged; they should work once build succeeds
       - name: Create Install Script
         run: |
           mkdir -p Scripts
