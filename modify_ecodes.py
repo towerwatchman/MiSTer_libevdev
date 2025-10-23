@@ -81,5 +81,5 @@ def modify_ecodes_c(file_path):
         f.writelines(modified_lines)
 
 if __name__ == "__main__":
-    modify_ecodes_c('src/evdev/ecodes.c')
+    modify_ecodes_c('python-evdev/src/evdev/ecodes.c')
     print('Modified ecodes.c with #ifdef checks for undefined keys.')

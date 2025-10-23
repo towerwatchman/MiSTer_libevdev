@@ -128,7 +128,7 @@ jobs:
           cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
           cp -r src/evdev/* Scripts/python/evdev/
           python3.9 -m pip install .
-          python3.9 src/evdev/genecodes_py.py > Scripts/python/evdev/ecodes.py || true
+          python3.9 python-evdev/src/evdev/genecodes_py.py > Scripts/python/evdev/ecodes.py || true
 
       - name: Create Install Script
         run: |
