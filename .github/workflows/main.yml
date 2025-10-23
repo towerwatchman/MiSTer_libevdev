@@ -85,9 +85,6 @@ jobs:
         run: |
           git clone https://github.com/gvalkov/python-evdev.git
           cd python-evdev
-          git checkout v1.7.1  # Added: Pin to latest tag for reproducibility (update if needed)
-          ls -R
-          pwd
 
       - name: Generate ecodes.c
         run: |
