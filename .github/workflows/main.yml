@@ -291,6 +291,9 @@ jobs:
 
       - name: Commit and Push Changes
         run: |
+          cd ~
+          pwd
+          ls -l
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add Scripts/python/evdev/*
