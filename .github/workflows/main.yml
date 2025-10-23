@@ -112,7 +112,7 @@ jobs:
           echo "export LD=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ld" >> $GITHUB_ENV
           echo "export AR=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ar" >> $GITHUB_ENV
           echo "export RANLIB=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-ranlib" >> $GITHUB_ENV
-          echo "export CFLAGS=-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -I/usr/arm-none-linux-gnueabihf/include -I~/target-headers/include -I/usr/include/arm-linux-gnueabihf/python3.9" >> $GITHUB_ENV
+          echo "export CFLAGS=-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -fPIC -I~/usr/arm-none-linux-gnueabihf/include -I~/target-headers/include -I~/usr/include/arm-linux-gnueabihf/python3.9" >> $GITHUB_ENV
           echo "export LDFLAGS=-L/opt/gcc-${GCC_VERSION}-arm/arm-none-linux-gnueabihf/lib -L/usr/arm-none-linux-gnueabihf/lib -Wl,--no-as-needed" >> $GITHUB_ENV
           echo "export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata__linux_arm-linux-gnueabihf" >> $GITHUB_ENV
           echo "export LDSHARED=/opt/gcc-${GCC_VERSION}-arm/bin/arm-none-linux-gnueabihf-gcc -shared" >> $GITHUB_ENV
