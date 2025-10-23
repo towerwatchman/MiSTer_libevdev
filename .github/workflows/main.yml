@@ -106,9 +106,9 @@ jobs:
 
       - name: Create Scripts Directory
         run: |
-          sudo mkdir -p /Scripts
-          sudo chown runner:runner /Scripts
-          sudo chmod 755 /Scripts
+          sudo mkdir -p Scripts
+          sudo chown runner:runner Scripts
+          sudo chmod 755 Scripts
 
       - name: Set Environment Variables
         run: |
@@ -130,9 +130,9 @@ jobs:
         run: |     
           cd python-evdev     
           python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
-          mkdir -p /Scripts/python/evdev
-          cp build/lib.linux-arm-3.9/evdev/*.so /Scripts/python/evdev/
-          cp src/evdev/* /Scripts/python/evdev/
+          mkdir -p Scripts/python/evdev
+          cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
+          cp src/evdev/* Scripts/python/evdev/
 
       - name: Create Install Script
         run: |
@@ -142,7 +142,7 @@ jobs:
           # install_evdev.sh
           # Moves python-evdev files from Scripts/python/evdev to /usr/lib/python3.9/site-packages/evdev/
           sudo mkdir -p /usr/lib/python3.9/site-packages/evdev
-          sudo mv /Scripts/python/evdev/* /usr/lib/python3.9/site-packages/evdev/
+          sudo mv Scripts/python/evdev/* /usr/lib/python3.9/site-packages/evdev/
           sudo chmod -R 755 /usr/lib/python3.9/site-packages/evdev
           sudo mv /usr/lib/python3.9/lib-dynload/libevdev.so /usr/lib/python3.9/lib-dynload/libevdev.so.bak 2>/dev/null || true
           echo "python-evdev installed to /usr/lib/python3.9/site-packages/evdev/"
@@ -293,9 +293,9 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add /Scripts/python/evdev/*
-          git add /Scripts/install_evdev.sh
-          git add /db/mister_evdev_db.json
+          git add Scripts/python/evdev/*
+          git add Scripts/install_evdev.sh
+          git add db/mister_evdev_db.json
           git commit -m "Update python-evdev and install script for $GITHUB_SHA" || echo "No changes to commit"
           git push origin main
         env:
@@ -304,7 +304,7 @@ jobs:
       - name: Package Artifacts
         run: |
           mkdir -p artifacts
-          cp -r /Scripts/* artifacts/
+          cp -r Scripts/* artifacts/
           tar -czf evdev-mister.tar.gz -C artifacts .
 
       - name: Upload Build Artifact
