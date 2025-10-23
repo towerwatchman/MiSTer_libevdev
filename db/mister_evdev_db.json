@@ -1,0 +1,135 @@
+{
+  "db_id": "mister_evdev",
+  "timestamp": 1761194042,
+  "files": {
+    "Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/__init__.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/__init__.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/ecodes.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/ecodes_runtime.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes_runtime.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/eventio.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/eventio_async.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio_async.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/events.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/events.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/ff.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ff.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/device.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/device.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/uinput.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/uinput.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/util.py": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/util.py",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/python/evdev/py.typed": {
+      "hash": "",
+      "size": ,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/py.typed",
+      "tags": ["evdev", "python"],
+      "overwrite": true,
+      "reboot": false
+    },
+    "Scripts/install_evdev.sh": {
+      "hash": "40018115ce35717d46db90cff32f9758",
+      "size": 499,
+      "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/install_evdev.sh",
+      "tags": ["evdev", "script"],
+      "overwrite": true,
+      "reboot": false
+    }
+  },
+  "folders": {
+    "Scripts/python/evdev": {
+      "tags": ["evdev"]
+    }
+  },
+  "default_options": {
+    "filter": "evdev"
+  }
+}
+EOL     
