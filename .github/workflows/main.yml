@@ -102,7 +102,8 @@ jobs:
 
       - name: Add Conditional Checks to ecodes.c
         run: |
-          python3.9 ../modify_ecodes.py
+          ls -l
+          python3.9 modify_ecodes.py
 
       - name: Set Environment Variables
         run: |
