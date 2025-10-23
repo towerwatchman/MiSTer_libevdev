@@ -86,18 +86,18 @@ jobs:
         run: |
           git clone https://github.com/gvalkov/python-evdev.git
           cd python-evdev
-          git checkout v1.7.0  # Pin to known working version
+          # Pin to a commit with src/evdev/ structure if needed, e.g., git checkout <commit>
           ls -R
+          pwd
 
       - name: Generate ecodes.c
         run: |
-          pwd
-          ls -l
+          cd python-evdev
           sudo mkdir -p /usr/include/linux
           sudo cp ~/target-headers/include/linux/input*.h /usr/include/linux/
           sudo cp ~/target-headers/include/linux/uinput.h /usr/include/linux/ || true
-          mkdir -p evdev
-          python3.9 evdev/genecodes_c.py --ecodes > evdev/ecodes.c
+          mkdir -p src/evdev
+          python3.9 src/evdev/genecodes_c.py --ecodes > src/evdev/ecodes.c
           sudo rm -rf /usr/include/linux
 
       - name: Add Conditional Checks to ecodes.c
@@ -125,9 +125,9 @@ jobs:
           python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
           mkdir -p Scripts/python/evdev
           cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
-          cp -r evdev/* Scripts/python/evdev/
+          cp -r src/evdev/* Scripts/python/evdev/
           python3.9 -m pip install .
-          python3.9 evdev/genecodes_py.py > Scripts/python/evdev/ecodes.py || true
+          python3.9 src/evdev/genecodes_py.py > Scripts/python/evdev/ecodes.py || true
 
       - name: Create Install Script
         run: |
