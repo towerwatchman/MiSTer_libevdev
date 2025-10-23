@@ -130,9 +130,13 @@ jobs:
         run: |     
           cd python-evdev     
           python3.9 setup.py build_ext --force --plat-name=linux_arm --build-lib=build/lib.linux-arm-3.9 --build-temp=build/temp.linux-arm-3.9
+          
+      
+      - name: Copy python-evdev to Scripts folder
+        run: |
           mkdir -p Scripts/python/evdev
-          cp build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
-          cp src/evdev/* Scripts/python/evdev/
+          cp python-evdev/build/lib.linux-arm-3.9/evdev/*.so Scripts/python/evdev/
+          cp python-evdev/src/evdev/* Scripts/python/evdev/
 
       - name: Create Install Script
         run: |
@@ -157,7 +161,7 @@ jobs:
             "db_id": "mister_evdev",
             "timestamp": $(date +%s),
             "files": {
-              "Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so": {
+              "_Utility/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so": {
                 "hash": "$(md5sum Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so",
@@ -165,7 +169,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so": {
+              "_Utility/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so": {
                 "hash": "$(md5sum Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so",
@@ -173,7 +177,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so": {
+              "_Utility/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so": {
                 "hash": "$(md5sum Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so",
@@ -181,7 +185,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/__init__.py": {
+              "_Utility/python/evdev/__init__.py": {
                 "hash": "$(md5sum Scripts/python/evdev/__init__.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/__init__.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/__init__.py",
@@ -189,7 +193,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/ecodes.py": {
+              "_Utility/python/evdev/ecodes.py": {
                 "hash": "$(md5sum Scripts/python/evdev/ecodes.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/ecodes.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes.py",
@@ -197,7 +201,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/ecodes_runtime.py": {
+              "_Utility/python/evdev/ecodes_runtime.py": {
                 "hash": "$(md5sum Scripts/python/evdev/ecodes_runtime.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/ecodes_runtime.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes_runtime.py",
@@ -205,7 +209,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/eventio.py": {
+              "_Utility/python/evdev/eventio.py": {
                 "hash": "$(md5sum Scripts/python/evdev/eventio.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/eventio.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio.py",
@@ -213,7 +217,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/eventio_async.py": {
+              "_Utility/python/evdev/eventio_async.py": {
                 "hash": "$(md5sum Scripts/python/evdev/eventio_async.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/eventio_async.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio_async.py",
@@ -221,7 +225,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/events.py": {
+              "_Utility/python/evdev/events.py": {
                 "hash": "$(md5sum Scripts/python/evdev/events.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/events.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/events.py",
@@ -229,7 +233,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/ff.py": {
+              "_Utility/python/evdev/ff.py": {
                 "hash": "$(md5sum Scripts/python/evdev/ff.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/ff.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ff.py",
@@ -237,7 +241,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/device.py": {
+              "_Utility/python/evdev/device.py": {
                 "hash": "$(md5sum Scripts/python/evdev/device.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/device.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/device.py",
@@ -245,7 +249,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/uinput.py": {
+              "_Utility/python/evdev/uinput.py": {
                 "hash": "$(md5sum Scripts/python/evdev/uinput.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/uinput.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/uinput.py",
@@ -253,7 +257,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/util.py": {
+              "_Utility/python/evdev/util.py": {
                 "hash": "$(md5sum Scripts/python/evdev/util.py | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/util.py),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/util.py",
@@ -261,7 +265,7 @@ jobs:
                 "overwrite": true,
                 "reboot": false
               },
-              "Scripts/python/evdev/py.typed": {
+              "_Utility/python/evdev/py.typed": {
                 "hash": "$(md5sum Scripts/python/evdev/py.typed | cut -d' ' -f1)",
                 "size": $(wc -c < Scripts/python/evdev/py.typed),
                 "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/py.typed",
@@ -279,8 +283,11 @@ jobs:
               }
             },
             "folders": {
-              "Scripts/python/evdev": {
-                "tags": ["evdev"]
+              "_Utility/python/evdev": {
+                "tags": ["evdev", "python"]
+              },
+              "Scripts": {
+                "tags": ["evdev", "script"]
               }
             },
             "default_options": {
