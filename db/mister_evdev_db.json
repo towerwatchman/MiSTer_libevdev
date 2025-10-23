@@ -1,114 +1,114 @@
 {
   "db_id": "mister_evdev",
-  "timestamp": 1761194042,
+  "timestamp": 1761195240,
   "files": {
-    "Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so": {
+      "hash": "be73fbc4eadba6f5bc099a51f97f9a80",
+      "size": 41232,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_input.cpython-39-arm-linux-gnueabihf.so",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so": {
+      "hash": "6ebcdbe3109fd32515c8228e279a70c2",
+      "size": 33920,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_uinput.cpython-39-arm-linux-gnueabihf.so",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so": {
+      "hash": "3377db49e89506c0c5744c5412184794",
+      "size": 62800,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/_ecodes.cpython-39-arm-linux-gnueabihf.so",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/__init__.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/__init__.py": {
+      "hash": "d8172dd8916b15e0ea88bb75911669e2",
+      "size": 1011,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/__init__.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/ecodes.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/ecodes.py": {
+      "hash": "2b32d00ecc6b378cfa50938eedf6ba4b",
+      "size": 235,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/ecodes_runtime.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/ecodes_runtime.py": {
+      "hash": "6d86703d245b3edc49bf30cb5d89dccb",
+      "size": 2838,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ecodes_runtime.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/eventio.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/eventio.py": {
+      "hash": "61f044cc24c8bf804d99ce5bc1a6d7d9",
+      "size": 4422,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/eventio_async.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/eventio_async.py": {
+      "hash": "25bfc116063c8883f53ef130d5cecc72",
+      "size": 3078,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/eventio_async.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/events.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/events.py": {
+      "hash": "cb9ded96ebea68b636a7f27a43750c61",
+      "size": 5905,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/events.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/ff.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/ff.py": {
+      "hash": "d8997f986e7778a3993f6aa9d4a384a8",
+      "size": 4961,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/ff.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/device.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/device.py": {
+      "hash": "58bc0c1de9afab0bc7ad496813df6dba",
+      "size": 12959,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/device.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/uinput.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/uinput.py": {
+      "hash": "0d893056ef06f41ceea7ba95ed3a5b45",
+      "size": 13363,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/uinput.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/util.py": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/util.py": {
+      "hash": "79a92ec2783313a6d68092bb146c36dd",
+      "size": 4409,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/util.py",
       "tags": ["evdev", "python"],
       "overwrite": true,
       "reboot": false
     },
-    "Scripts/python/evdev/py.typed": {
-      "hash": "",
-      "size": ,
+    "_Utility/python/evdev/py.typed": {
+      "hash": "d41d8cd98f00b204e9800998ecf8427e",
+      "size": 0,
       "url": "https://raw.githubusercontent.com/towerwatchman/MiSTer_evdev/main/Scripts/python/evdev/py.typed",
       "tags": ["evdev", "python"],
       "overwrite": true,
@@ -124,8 +124,11 @@
     }
   },
   "folders": {
-    "Scripts/python/evdev": {
-      "tags": ["evdev"]
+    "_Utility/python/evdev": {
+      "tags": ["evdev", "python"]
+    },
+    "Scripts": {
+      "tags": ["evdev", "script"]
     }
   },
   "default_options": {
