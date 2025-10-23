@@ -300,7 +300,7 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add python-evdev/Scripts/python/evdev/*
+          git add Scripts/python/evdev/*
           git add Scripts/install_evdev.sh
           git add db/mister_evdev_db.json
           git commit -m "Update python-evdev and install script for $GITHUB_SHA" || echo "No changes to commit"
